@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.4",
+    "graceful-fs": "^4.2.0",
+    "jsonfile": "^5.0.0",
     "prettier": "^1.17.0"
   }
 }

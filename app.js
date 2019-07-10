@@ -1,8 +1,20 @@
 const express = require("express");
-const port = process.env.PORT || 4000
+const fs = require("graceful-fs");
+
+const fileUtils = require("./utils/fileUtils.js/index.js");
+
+const PORT = process.env.PORT || 4000;
 
 const app = express();
 
-app.get("/", (req, res) => res.send("Hello World!"));
+app.use(express.json());
 
-app.listen(port, () => console.log(`Example app listening on port ${port}`));
+app.get("/", (req, res) => res.send(fileUtils.getJson()));
+
+app.post("/", (req, res) => {
+  console.log(req.body);
+  fileUtils.saveJson(req.body);
+  return res.send("POST called!");
+});
+
+app.listen(PORT, () => console.log(`Example app listening on port ${PORT}`));
