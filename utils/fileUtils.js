@@ -1,10 +1,15 @@
 const jsonfile = require("jsonfile");
 const FILE = "mvc.json";
 
-exports.saveJson = obj => {
+exports.saveLeaderboard = obj => {
   jsonfile.writeFileSync(FILE, obj);
 };
 
-exports.getJson = () => {
+exports.saveLeadboardBackup = () => {
+  jsonfile.writeFileSync(`${FILE}.backup-${Date.now()}`, this.getLeaderboard())
+
+}
+
+exports.getLeaderboard = () => {
   return jsonfile.readFileSync(FILE, {throws: false});
 };
