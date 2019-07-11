@@ -1,5 +1,5 @@
 /node_modules
-mvc.json
+mvc*.json
 *json.backup*
 /trash
 .env

@@ -1,5 +1,6 @@
 const express = require("express");
 const fs = require("graceful-fs");
+const EloRating = require("elo-rating");
 
 const fileUtils = require("./utils/fileUtils.js");
 
@@ -10,10 +11,43 @@ const app = express();
 app.use(express.json());
 
 app.get("/", async (req, res) => {
-
   const leaderboard = await fileUtils.getLeaderboard();
 
   res.send(leaderboard);
+});
+
+app.get("/elo/games", async (req, res) => {
+  const leaderboard = await fileUtils.getLeaderboard();
+
+  elo_rating = {};
+
+  leaderboard.sessions.forEach(session => {
+    session.matches.forEach(match => {
+      match.games.forEach(game => {
+
+        const winner = game.winner;
+        const loser = game.loser;
+
+        if (!elo_rating[winner]) elo_rating[winner] = {};
+        if (!elo_rating[loser]) elo_rating[loser] = {};
+
+        const winner_rating = elo_rating[winner] && elo_rating[winner].rating || 1500;
+        const loser_rating = elo_rating[loser] && elo_rating[loser].rating || 1500;
+
+        // let winner_change = elo_rating[game.winner].change || 0;
+        // let loser_change = elo_rating[game.loser].change || 0;
+
+        result = EloRating.calculate(winner_rating, loser_rating, true);
+
+        elo_rating[winner].rating = result.playerRating;
+        elo_rating[loser].rating = result.opponentRating;
+
+        console.log(elo_rating)
+      });
+    });
+  });
+
+  res.send(elo_rating);
 });
 
 app.get("/games/won", async (req, res) => {
@@ -33,7 +67,7 @@ app.get("/games/won", async (req, res) => {
     });
   });
 
-  res.send(win_count)
+  res.send(win_count);
 });
 
 app.post("/", async (req, res) => {
