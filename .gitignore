@@ -2,3 +2,4 @@
 mvc.json
 *json.backup*
 /trash
+.env
