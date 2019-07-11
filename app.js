@@ -50,9 +50,11 @@ app.post("/session", (req, res) => {
 
   leaderboard = fileUtils.getLeaderboard();
 
+  console.log(leaderboard.toString());
+
   leaderboard.sessions.push(session);
   fileUtils.saveLeaderboard(leaderboard);
-  return res.send(`Success! Saved session: ${session}`);
+  return res.send(`Success! Saved session: ${session.toString()}`);
 });
 
 app.listen(PORT, () => console.log(`Example app listening on port ${PORT}`));
