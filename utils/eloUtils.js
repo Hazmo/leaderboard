@@ -49,11 +49,23 @@ exports.getEloForTournaments = leaderboard => {
       elo_rating[winner].change += result.playerRating - winner_rating;
       elo_rating[loser].change += result.opponentRating - loser_rating;
 
-      console.log(elo_rating);
+      // console.log(elo_rating);
     });
 
-    elo_rating[winner].rating += elo_rating[winner].change;
-    elo_rating[loser].rating += elo_rating[loser].change;
+    Object.keys(players).forEach(player => {
+      elo_rating[player].rating += elo_rating[player].change;
+      elo_rating[player].change = 0;
+    });
+
+    // elo_rating[winner].rating += elo_rating[winner].change;
+    // elo_rating[loser].rating += elo_rating[loser].change;
+
+    console.log(elo_rating);
+    // console.log(elo_rating[winner]);
+    // console.log(elo_rating[loser]);
+
+    // elo_rating[winner].change = 0;
+    // elo_rating[loser].change = 0;
 
     //elo change
   });
@@ -66,8 +78,6 @@ const getResultForMatch = (match, best_of = 3) => {
 
   win_count = {};
   players = getPlayersForMatch(match);
-
-  console.log(players);
 
   for (let game of match.games) {
     if (!win_count[game.winner]) {
@@ -101,11 +111,12 @@ const initPlayerRatingsForTournament = leaderboard => {
     let loser = game.loser;
 
     if (!players[winner])
-      Object.assign(players, { [winner]: { rating: DEFAULT_RATING, change: DEFAULT_CHANGE } });
+      Object.assign(players, {
+        [winner]: { rating: DEFAULT_RATING, change: DEFAULT_CHANGE }
+      });
     if (!players[loser])
       Object.assign(players, {
-        [loser]: { rating: DEFAULT_RATING, change: DEFAULT_CHANGE },
-        ...players
+        [loser]: { rating: DEFAULT_RATING, change: DEFAULT_CHANGE }
       });
   });
 
