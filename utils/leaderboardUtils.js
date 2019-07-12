@@ -1,4 +1,4 @@
-exports.gamesWon = () => {
+exports.gamesWon = (leaderboard) => {
   win_count = {};
 
   //todo use compute on games
