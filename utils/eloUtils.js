@@ -44,13 +44,13 @@ exports.getEloForTournaments = leaderboard => {
   const players = initPlayerRatingsForTournament(leaderboard);
   const elo_rating = { ...players };
 
-  const elo_history = { ...initPlayerRatingsForTournament(leaderboard) };
+  // const elo_history = { ...initPlayerRatingsForTournament(leaderboard) };
 
-  Object.keys(players).forEach(player => {
-    elo_history[player].history = [];
-    delete elo_history[player].rating;
-    delete elo_history[player].change;
-  });
+  // Object.keys(players).forEach(player => {
+  //   elo_history[player].history = [];
+  //   delete elo_history[player].rating;
+  //   delete elo_history[player].change;
+  // });
 
   // console.log(elo_history);
   // console.log(elo_rating);
@@ -58,6 +58,7 @@ exports.getEloForTournaments = leaderboard => {
   leaderboard.sessions
     .filter(session => session.type === "TOURNAMENT")
     .forEach(session => {
+      console.log(session);
       let winner;
       let loser;
       session.matches.forEach(match => {
@@ -79,14 +80,14 @@ exports.getEloForTournaments = leaderboard => {
         // console.log(elo_rating);
       });
 
-      // Object.keys(players).forEach(player => {
-      //   elo_rating[player].rating += elo_rating[player].change;
-      //   elo_history[player].history.push({
-      //     rating: elo_rating[player].rating,
-      //     change: elo_rating[player].change
-      //   });
-      //   elo_rating[player].change = 0;
-      // });
+      Object.keys(players).forEach(player => {
+        elo_rating[player].rating += elo_rating[player].change;
+        // elo_history[player].history.push({
+        //   rating: elo_rating[player].rating,
+        //   change: elo_rating[player].change
+        // });
+        elo_rating[player].change = 0;
+      });
 
       // console.log(JSON.stringify(elo_history));
     });
@@ -95,7 +96,7 @@ exports.getEloForTournaments = leaderboard => {
 };
 
 const getResultForMatch = (match, best_of = 3) => {
-  const games_needed_to_win = best_of === 1 ? 1 : best_of - 1;
+  const games_needed_to_win = Math.ceil(best_of / 2);
 
   win_count = {};
   players = getPlayersForMatch(match);
