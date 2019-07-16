@@ -5,28 +5,6 @@ const DEFAULT_RATING = 1500;
 const DEFAULT_CHANGE = 0;
 
 exports.getEloForGames = leaderboard => {
-  const elo_rating = {};
-
-  leaderboardUtils.computeOnGames(leaderboard, (session, match, game) => {
-    const winner = game.winner;
-    const loser = game.loser;
-
-    const winner_rating = getRatingOrDefault(elo_rating, winner);
-    const loser_rating = getRatingOrDefault(elo_rating, loser);
-
-    result = EloRating.calculate(winner_rating, loser_rating, true);
-
-    elo_rating[winner].rating = result.playerRating;
-    elo_rating[loser].rating = result.opponentRating;
-
-    console.log(elo_rating);
-  });
-
-  return elo_rating;
-};
-
-exports.getEloForTournaments = leaderboard => {
-  //init player ratings
   const players = initPlayerRatingsForTournament(leaderboard);
   const elo_rating = { ...players };
 
@@ -56,25 +34,68 @@ exports.getEloForTournaments = leaderboard => {
       elo_rating[player].rating += elo_rating[player].change;
       elo_rating[player].change = 0;
     });
-
-    // elo_rating[winner].rating += elo_rating[winner].change;
-    // elo_rating[loser].rating += elo_rating[loser].change;
-
-    console.log(elo_rating);
-    // console.log(elo_rating[winner]);
-    // console.log(elo_rating[loser]);
-
-    // elo_rating[winner].change = 0;
-    // elo_rating[loser].change = 0;
-
-    //elo change
   });
 
   return elo_rating;
 };
 
+exports.getEloForTournaments = leaderboard => {
+  //init player ratings
+  const players = initPlayerRatingsForTournament(leaderboard);
+  const elo_rating = { ...players };
+
+  const elo_history = { ...initPlayerRatingsForTournament(leaderboard) };
+
+  Object.keys(players).forEach(player => {
+    elo_history[player].history = [];
+    delete elo_history[player].rating;
+    delete elo_history[player].change;
+  });
+
+  // console.log(elo_history);
+  // console.log(elo_rating);
+
+  leaderboard.sessions
+    .filter(session => session.type === "TOURNAMENT")
+    .forEach(session => {
+      let winner;
+      let loser;
+      session.matches.forEach(match => {
+        //work out winner
+        const match_result = getResultForMatch(match, session.best_of);
+        //calc elo change
+
+        winner = match_result.winner;
+        loser = match_result.loser;
+
+        const winner_rating = elo_rating[winner].rating;
+        const loser_rating = elo_rating[loser].rating;
+
+        result = EloRating.calculate(winner_rating, loser_rating, true);
+
+        elo_rating[winner].change += result.playerRating - winner_rating;
+        elo_rating[loser].change += result.opponentRating - loser_rating;
+
+        // console.log(elo_rating);
+      });
+
+      // Object.keys(players).forEach(player => {
+      //   elo_rating[player].rating += elo_rating[player].change;
+      //   elo_history[player].history.push({
+      //     rating: elo_rating[player].rating,
+      //     change: elo_rating[player].change
+      //   });
+      //   elo_rating[player].change = 0;
+      // });
+
+      // console.log(JSON.stringify(elo_history));
+    });
+
+  return elo_rating;
+};
+
 const getResultForMatch = (match, best_of = 3) => {
-  const games_needed_to_win = best_of - 1;
+  const games_needed_to_win = best_of === 1 ? 1 : best_of - 1;
 
   win_count = {};
   players = getPlayersForMatch(match);
@@ -97,6 +118,7 @@ const getResultForMatch = (match, best_of = 3) => {
       //   console.log(games_needed_to_win);
     }
   }
+  console.log("no winners????")
 };
 
 const getPlayersForMatch = match => {
