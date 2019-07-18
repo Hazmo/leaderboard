@@ -1,10 +1,14 @@
-const EloRating = require("elo-rating");
-const leaderboardUtils = require("./leaderboardUtils.js");
+import EloRating from "elo-rating";
+import leaderboardUtils from "../utils/leaderboardUtils.js";
+import { Leaderboard, Match } from "../ts/app_types";
+import { Type } from "../ts/app_enums.js";
+
+
 
 const DEFAULT_RATING = 1500;
 const DEFAULT_CHANGE = 0;
 
-exports.getEloForGames = leaderboard => {
+const getEloForGames = (leaderboard: Leaderboard) => {
   const players = initPlayerRatingsForTournament(leaderboard);
   const elo_rating = { ...players };
 
@@ -22,7 +26,7 @@ exports.getEloForGames = leaderboard => {
       const winner_rating = elo_rating[winner].rating;
       const loser_rating = elo_rating[loser].rating;
 
-      result = EloRating.calculate(winner_rating, loser_rating, true);
+      let result = EloRating.calculate(winner_rating, loser_rating, true);
 
       elo_rating[winner].change += result.playerRating - winner_rating;
       elo_rating[loser].change += result.opponentRating - loser_rating;
@@ -39,7 +43,7 @@ exports.getEloForGames = leaderboard => {
   return elo_rating;
 };
 
-exports.getEloForTournaments = leaderboard => {
+const getEloForTournaments = (leaderboard: Leaderboard) => {
   //init player ratings
   const players = initPlayerRatingsForTournament(leaderboard);
   const elo_rating = { ...players };
@@ -56,11 +60,11 @@ exports.getEloForTournaments = leaderboard => {
   // console.log(elo_rating);
 
   leaderboard.sessions
-    .filter(session => session.type === "TOURNAMENT")
+    .filter(session => session.type === Type.TOURNAMENT)
     .forEach(session => {
       console.log(session);
-      let winner;
-      let loser;
+      let winner: string;
+      let loser: string;
       session.matches.forEach(match => {
         //work out winner
         const match_result = getResultForMatch(match, session.best_of);
@@ -72,7 +76,7 @@ exports.getEloForTournaments = leaderboard => {
         const winner_rating = elo_rating[winner].rating;
         const loser_rating = elo_rating[loser].rating;
 
-        result = EloRating.calculate(winner_rating, loser_rating, true);
+        let result = EloRating.calculate(winner_rating, loser_rating, true);
 
         elo_rating[winner].change += result.playerRating - winner_rating;
         elo_rating[loser].change += result.opponentRating - loser_rating;
@@ -95,11 +99,11 @@ exports.getEloForTournaments = leaderboard => {
   return elo_rating;
 };
 
-const getResultForMatch = (match, best_of = 3) => {
+const getResultForMatch = (match: Match, best_of = 3) => {
   const games_needed_to_win = Math.ceil(best_of / 2);
 
-  win_count = {};
-  players = getPlayersForMatch(match);
+  const win_count = {};
+  const players = getPlayersForMatch(match);
 
   for (let game of match.games) {
     if (!win_count[game.winner]) {
@@ -119,17 +123,17 @@ const getResultForMatch = (match, best_of = 3) => {
       //   console.log(games_needed_to_win);
     }
   }
-  console.log("no winners????")
+  console.log("no winners????");
 };
 
-const getPlayersForMatch = match => {
+const getPlayersForMatch = (match: Match) => {
   return [match.games[0].winner, match.games[0].loser];
 };
 
-const initPlayerRatingsForTournament = leaderboard => {
+const initPlayerRatingsForTournament = (leaderboard: Leaderboard) => {
   const players = {};
 
-  leaderboardUtils.computeOnGames(leaderboard, (session, match, game) => {
+  leaderboardUtils.computeOnGames(leaderboard, (_, __, game) => {
     let winner = game.winner;
     let loser = game.loser;
 
@@ -148,7 +152,7 @@ const initPlayerRatingsForTournament = leaderboard => {
   return players;
 };
 
-const getRatingOrDefault = (elo_rating, player) => {
+const getRatingOrDefault = (elo_rating: any, player: string) => {
   if (!elo_rating[player]) {
     elo_rating[player] = {};
   }
@@ -158,4 +162,9 @@ const getRatingOrDefault = (elo_rating, player) => {
   } else {
     return DEFAULT_RATING;
   }
+};
+
+export default {
+  getEloForGames,
+  getEloForTournaments
 };

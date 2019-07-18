@@ -1,7 +1,7 @@
-const express = require("express");
-const fileUtils = require("./utils/fileUtils.js");
-const eloUtils = require("./utils/eloUtils.js");
-const leaderboardUtils = require("./utils/leaderboardUtils.js");
+import express from "express";
+import fileUtils from "./utils/fileUtils.js";
+import eloUtils from "./elo/eloUtils";
+import leaderboardUtils from "./utils/leaderboardUtils.js";
 
 const PORT = process.env.PORT || 4000;
 
@@ -17,13 +17,13 @@ app.get("/", async (req, res) => {
 
 app.get("/elo/games", async (req, res) => {
   const leaderboard = await fileUtils.getLeaderboard();
-  elo_rating = eloUtils.getEloForGames(leaderboard);
+  const elo_rating = eloUtils.getEloForGames(leaderboard);
   res.send(elo_rating);
 });
 
 app.get("/elo/tournament", async (req, res) => {
   const leaderboard = await fileUtils.getLeaderboard();
-  elo_rating = eloUtils.getEloForTournaments(leaderboard);
+  const elo_rating = eloUtils.getEloForTournaments(leaderboard);
   res.send(elo_rating);
 })
 
@@ -46,7 +46,7 @@ app.post("/session", async (req, res) => {
   console.log(req.body);
   const leaderboard = await fileUtils.saveLeadboardBackup();
 
-  session = req.body;
+  const session = req.body;
   session.date = Date.now();
 
   console.log(leaderboard.toString());
